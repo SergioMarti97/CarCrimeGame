@@ -11,11 +11,11 @@ import java.util.Objects;
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/views/mainView.fxml")));
-        primaryStage.setTitle("Car Crime Game");
-        primaryStage.setScene(new Scene(root, 1280, 725));
-        primaryStage.show();
+        stage.setTitle("Car Crime Game");
+        stage.setScene(new Scene(root, 1280, 725));
+        stage.show();
     }
 
 

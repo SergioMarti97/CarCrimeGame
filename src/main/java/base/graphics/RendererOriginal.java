@@ -1,4 +1,4 @@
-package base.renderer;
+package base.graphics;
 
 import javafx.scene.image.PixelBuffer;
 import javafx.scene.image.PixelFormat;

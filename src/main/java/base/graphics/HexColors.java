@@ -1,4 +1,4 @@
-package base.renderer;
+package base.graphics;
 
 /**
  * This class is an attempt to have all the codes

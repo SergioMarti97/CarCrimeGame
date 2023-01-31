@@ -1,7 +1,7 @@
 package performance;
 
-import base.renderer.HexColors;
-import base.renderer.Renderer;
+import base.graphics.HexColors;
+import base.graphics.Renderer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;

@@ -2,7 +2,7 @@ package base;
 
 import base.clock.GameClock;
 import base.input.Input;
-import base.renderer.Renderer;
+import base.graphics.Renderer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -95,12 +95,15 @@ public class GameApplication extends Application {
     protected void update(float elapsedTime) {
         game.update(this, elapsedTime);
         input.update();
+        renderer.process();
     }
 
     protected void render() {
         canvas.getGraphicsContext2D().drawImage(image, 0, 0);
+        canvas.getGraphicsContext2D().setImageSmoothing(true);
+
         game.render(this);
-        renderer.process();
+
     }
 
     // Getters and Setters

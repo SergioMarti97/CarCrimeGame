@@ -31,8 +31,9 @@ public class Renderer3D extends Renderer {
     /**
      * The constructor
      */
-    public Renderer3D(int pW, int pH) {
+    public Renderer3D(int[] p, int pW, int pH) {
         super(pW, pH);
+        this.p = p;
         depthBuffer = new float[pW * pH];
         clearDepthBuffer();
     }

@@ -19,7 +19,7 @@ public class Renderer {
 
     protected final int height;
 
-    protected final int[] p;
+    protected int[] p;
     
     protected final float invW;
     

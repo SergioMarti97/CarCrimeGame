@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -60,10 +61,11 @@ public class GameApplication extends Application {
 
         // Set the canvas
         canvas = new Canvas();
+        canvas.setFocusTraversable(true);
 
         // Choose between canvas or image view...
         StackPane pane = new StackPane(canvas);
-        pane.setFocusTraversable(true);
+        //pane.setFocusTraversable(true);
 
         // bing width and height properties to the graphics display
         imgView.fitWidthProperty().bind(pane.widthProperty());
@@ -72,7 +74,7 @@ public class GameApplication extends Application {
         canvas.heightProperty().bind(pane.heightProperty());
 
         // Input
-        input = new Input(pane);
+        input = new Input(canvas);
 
         // Game Clock
         clock = new GameClock(this::update, this::render);
@@ -99,8 +101,15 @@ public class GameApplication extends Application {
     }
 
     protected void render() {
-        canvas.getGraphicsContext2D().drawImage(image, 0, 0);
-        canvas.getGraphicsContext2D().setImageSmoothing(true);
+        //canvas.getGraphicsContext2D().drawImage(image, 0, 0);
+        //canvas.getGraphicsContext2D().setImageSmoothing(true);
+
+        canvas.getGraphicsContext2D().getPixelWriter().setPixels(
+                0, 0,
+                renderer.getWidth(), renderer.getHeight(),
+                PixelFormat.getIntArgbInstance(),
+                renderer.getP(),
+                0, renderer.getWidth());
 
         game.render(this);
 

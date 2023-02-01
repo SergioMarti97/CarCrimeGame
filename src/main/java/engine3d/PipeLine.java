@@ -92,13 +92,13 @@ public class PipeLine {
     /**
      * The constructor
      */
-    public PipeLine(int pW, int pH) {
+    public PipeLine(int[] p, int pW, int pH) {
         screenWidth = pW;
         screenHeight = pH;
 
         perspective = Perspective.NORMAL;
 
-        renderer3D = new Renderer3D(pW, pH);
+        renderer3D = new Renderer3D(p, pW, pH);
 
         cameraObj = new Camera();
         cameraObj.setOrigin(new Vec4df(0.0f, 0.0f, -1.0f));

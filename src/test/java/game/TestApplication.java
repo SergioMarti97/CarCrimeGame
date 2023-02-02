@@ -8,8 +8,8 @@ public class TestApplication extends GameApplication {
     public void init() throws Exception {
         super.init();
         setAppName("Test Application");
-        setWidth(985);
-        setHeight(645);
+        setWidth(985); // 985
+        setHeight(645); // 645
         setGame(new CityGame());
     }
 

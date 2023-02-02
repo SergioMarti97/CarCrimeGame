@@ -171,6 +171,7 @@ public class MatrixMath {
         matrix.getM()[2][2] = far / (far - near);
         matrix.getM()[3][2] = (-far * near) / (far - near);
         matrix.getM()[2][3] = 1.0f;
+
         matrix.getM()[3][3] = 0.0f;
         return matrix;
     }

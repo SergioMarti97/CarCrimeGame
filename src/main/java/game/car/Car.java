@@ -1,6 +1,9 @@
 package game.car;
 
 import base.graphics.image.Image;
+import base.vectors.points2d.Vec2df;
+import collisions.Polygon;
+import collisions.PolygonFactory;
 import engine3d.PipeLine;
 import engine3d.matrix.Mat4x4;
 import engine3d.matrix.MatrixMath;
@@ -28,12 +31,12 @@ public class Car {
     /**
      * The position
      */
-    private Vec4df position;
+    private Vec2df position;
 
     /**
      * The velocity
      */
-    private Vec4df velocity;
+    private Vec2df velocity;
 
     /**
      * The rotation of the car
@@ -44,6 +47,8 @@ public class Car {
      * The speed of the car
      */
     private float speed;
+
+    private Polygon boundingBox;
 
     /**
      * Constructor
@@ -57,11 +62,19 @@ public class Car {
         Mat4x4 matOffsetScale = MatrixMath.matrixMultiplyMatrix(matOffset, matScale);
         MatrixMath.transformMesh(matOffsetScale, flat);
 
-        position = new Vec4df();
-        velocity = new Vec4df();
+        position = new Vec2df();
+        velocity = new Vec2df();
         rotation = 0.0f;
         speed = 2.0f;
 
+        boundingBox = PolygonFactory.buildCenteredSquare(position.getX(), position.getY());
+        // Shape the bounding box to the shape of the car
+        // Vec2df offset = new Vec2df(-0.5f, -0.5f);
+        Vec2df scale = new Vec2df(0.4f, 0.2f);
+        for (var p : boundingBox.getModel()) {
+            // p.add(offset);
+            p.multiply(scale);
+        }
     }
 
     /**
@@ -73,7 +86,18 @@ public class Car {
         Vec4df vec4df = new Vec4df(1.0f, 0.0f, 0.0f);
         Mat4x4 matRotZ = MatrixMath.matrixMakeRotationZ(rotation);
         this.rotation = rotation;
-        velocity = MatrixMath.matrixMultiplyVector(matRotZ, vec4df);
+        Vec4df velocity = MatrixMath.matrixMultiplyVector(matRotZ, vec4df);
+        this.velocity.set(velocity.getX(), velocity.getY());
+    }
+
+    public void updateBoundingBox() {
+        boundingBox.getPos().set(position);
+        boundingBox.setAngle(rotation);
+        boundingBox.update();
+    }
+
+    public void setPosToBuildingBox() {
+        position.set(boundingBox.getPos());
     }
 
     /**
@@ -113,11 +137,11 @@ public class Car {
         return speed;
     }
 
-    public Vec4df getVelocity() {
+    public Vec2df getVelocity() {
         return velocity;
     }
 
-    public Vec4df getPosition() {
+    public Vec2df getPosition() {
         return position;
     }
 
@@ -129,12 +153,18 @@ public class Car {
         this.speed = speed;
     }
 
-    public void setPosition(Vec4df position) {
+    public void setPosition(Vec2df position) {
         this.position = position;
     }
 
-    public void setVelocity(Vec4df velocity) {
+    public void setVelocity(Vec2df velocity) {
         this.velocity = velocity;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    public Polygon getBoundingBox() {
+        return boundingBox;
     }
 
 }

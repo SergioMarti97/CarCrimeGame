@@ -6,6 +6,8 @@ import base.graphics.HexColors;
 import base.graphics.image.Image;
 import base.graphics.image.ImageTile;
 import base.vectors.points2d.Vec2di;
+import collisions.ConvexPolygonCollisions;
+import collisions.Polygon;
 import engine3d.PipeLine;
 import engine3d.RenderFlags;
 import engine3d.matrix.Mat4x4;
@@ -20,6 +22,7 @@ import game.city.CityRender;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class CityGame implements AbstractGame {
@@ -46,6 +49,10 @@ public class CityGame implements AbstractGame {
 
     private Model carModel;
 
+    ////
+
+    private final ArrayList<Polygon> boundingBoxes = new ArrayList<>();
+
     @Override
     public void initialize(GameApplication gc) {
         Image imageCar = new Image("/assets/cars/car_top1.png");
@@ -53,7 +60,7 @@ public class CityGame implements AbstractGame {
         car = new Car(imageCar);
         city = new City(64, 32);
 
-        cityTextures = getTextures(new ImageTile("/assets/City_Roads1_mip2.png", 96, 96));
+        cityTextures = getTextures(new ImageTile("/assets/City_Roads1_mip1.png", 96, 96));
 
         pipe = new PipeLine(gc.getRenderer());
         pipe.getRenderer3D().setRenderFlag(RenderFlags.RENDER_FULL_TEXTURED);
@@ -97,6 +104,8 @@ public class CityGame implements AbstractGame {
             car.getPosition().addToX(-car.getVelocity().getX() * car.getSpeed() * dt);
             car.getPosition().addToY(-car.getVelocity().getY() * car.getSpeed() * dt);
         }
+
+        car.updateBoundingBox();
     }
 
     private void updateCamera(GameApplication gc, float dt) {
@@ -163,20 +172,32 @@ public class CityGame implements AbstractGame {
             if (!selectedCells.isEmpty()) {
                 for (var cell : selectedCells) {
                     cell.addHeight(1);
+                    if (cell.isSolid()) {
+                        boundingBoxes.add(cell.getBoundingBox());
+                    }
                 }
             } else {
                 CityCell cell = city.getCell(mouseWorld.getX(), mouseWorld.getY());
                 cell.addHeight(1);
+                if (cell.isSolid()) {
+                    boundingBoxes.add(cell.getBoundingBox());
+                }
             }
         }
         if (gc.getInput().isKeyDown(KeyCode.E)) {
             if (!selectedCells.isEmpty()) {
                 for (var cell : selectedCells) {
                     cell.addHeight(-1);
+                    if (!cell.isSolid()) {
+                        boundingBoxes.remove(cell.getBoundingBox());
+                    }
                 }
             } else {
                 CityCell cell = city.getCell(mouseWorld.getX(), mouseWorld.getY());
                 cell.addHeight(-1);
+                if (!cell.isSolid()) {
+                    boundingBoxes.remove(cell.getBoundingBox());
+                }
             }
         }
     }
@@ -187,6 +208,14 @@ public class CityGame implements AbstractGame {
         updateCamera(gc, elapsedTime);
         updateMousePositionOnGroundPlane(gc);
         updateCity(gc);
+
+        // Check for overlaps
+        for (var p : boundingBoxes) {
+            p.setOverlap(false);
+            p.setOverlap(p.isOverlap() || ConvexPolygonCollisions.shapeOverlapDIAGSStatic(car.getBoundingBox(), p));
+            car.setPosToBuildingBox();
+        }
+
     }
 
     @Override
@@ -196,6 +225,7 @@ public class CityGame implements AbstractGame {
         pipe.getRenderer3D().setRenderFlag(RenderFlags.RENDER_FULL_TEXTURED);
         cityRender.renderCity(city, cityTextures);
         car.render(carModel, pipe);
+        //car.render(pipe);
 
         pipe.getRenderer3D().setRenderFlag(RenderFlags.RENDER_WIRE);
         for (var cell : selectedCells) {
@@ -205,5 +235,10 @@ public class CityGame implements AbstractGame {
         }
 
         pipe.getRenderer3D().clearDepthBuffer();
+
+        /*car.getBoundingBox().render(gc);
+        for (Polygon polygon : polygons) {
+            polygon.render(gc);
+        }*/
     }
 }

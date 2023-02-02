@@ -2,6 +2,8 @@ package engine3d;
 
 import engine3d.matrix.Mat4x4;
 import engine3d.matrix.MatrixMath;
+import engine3d.transforms.Rotation;
+import engine3d.transforms.Transform;
 import engine3d.vectors.Vec4df;
 import base.graphics.Renderer;
 
@@ -57,7 +59,9 @@ public class Camera {
     /**
      * The rotation of the camera in the 3 axes
      */
-    private Vec4df cameraRot = new Vec4df(0.0f, 0.0f, 0.0f);
+    //private Vec4df cameraRot = new Vec4df(0.0f, 0.0f, 0.0f);
+
+    private Rotation rot = new Rotation();
 
     /**
      * Constructor
@@ -102,13 +106,15 @@ public class Camera {
      * @return returns the matrix vision
      */
     public Mat4x4 getMatView() {
-        Mat4x4 matCameraRotX = MatrixMath.matrixMakeRotationX(cameraRot.getX());
-        Mat4x4 matCameraRotY = MatrixMath.matrixMakeRotationY(cameraRot.getY());
-        Mat4x4 matCameraRotZ = MatrixMath.matrixMakeRotationZ(cameraRot.getZ());
-        Mat4x4 matCameraRotXY = MatrixMath.matrixMultiplyMatrix(matCameraRotX, matCameraRotY);
-        Mat4x4 matCameraRot = MatrixMath.matrixMultiplyMatrix(matCameraRotXY, matCameraRotZ);
-        matCamera = calculateMatCamera(up, target, matCameraRot);
-        matView = MatrixMath.matrixQuickInverse(matCamera);
+        //Mat4x4 matCameraRotX = MatrixMath.matrixMakeRotationX(cameraRot.getX());
+        //Mat4x4 matCameraRotY = MatrixMath.matrixMakeRotationY(cameraRot.getY());
+        //Mat4x4 matCameraRotZ = MatrixMath.matrixMakeRotationZ(cameraRot.getZ());
+        //Mat4x4 matCameraRotXY = MatrixMath.matrixMultiplyMatrix(matCameraRotX, matCameraRotY);
+        //Mat4x4 matCameraRot = MatrixMath.matrixMultiplyMatrix(matCameraRotXY, matCameraRotZ);
+        //matCamera = calculateMatCamera(up, target, matCameraRot);
+        rot.update();
+        matCamera = calculateMatCamera(up, target, rot.getMat());
+        matView = MatrixMath.matrixInverse(matCamera);
         return matView;
     }
 
@@ -154,7 +160,7 @@ public class Camera {
         offSetY += increment;
         printVec3d(r, "Target", target, offSetX, offSetY, color);
         offSetY += increment;
-        printVec3d(r, "Camera rotation", cameraRot, offSetX, offSetY, color);
+        printVec3d(r, "Camera rotation", rot.getDelta(), offSetX, offSetY, color);
     }
 
     /**
@@ -162,33 +168,33 @@ public class Camera {
      * 
      * @param angleRad the angle of rotation on the X axis.
      */
-    public void rotX(float angleRad) {
+    /*public void rotX(float angleRad) {
         float rotX = cameraRot.getX();
         rotX += angleRad;
         cameraRot.setX(rotX);
-    }
+    }*/
 
     /**
      * Rotate the camera on the Y axis the radians passed by parameter.
      *
      * @param angleRad the angle of rotation on the Y axis.
      */
-    public void rotY(float angleRad) {
+    /*public void rotY(float angleRad) {
         float rotY = cameraRot.getY();
         rotY += angleRad;
         cameraRot.setY(rotY);
-    }
+    }*/
 
     /**
      * Rotate the camera on the Z axis the radians passed by parameter.
      *
      * @param angleRad the angle of rotation in the Z axis.
      */
-    public void rotZ(float angleRad) {
+    /*public void rotZ(float angleRad) {
         float rotZ = cameraRot.getZ();
         rotZ += angleRad;
         cameraRot.setZ(rotZ);
-    }
+    }*/
 
     /**
      * Modify the origin position of the camera.
@@ -203,8 +209,12 @@ public class Camera {
         return origin;
     }
 
-    public Vec4df getCameraRot() {
+    /*public Vec4df getCameraRot() {
         return cameraRot;
+    }*/
+
+    public Rotation getCameraRot() {
+        return rot;
     }
 
     public Vec4df getUp() {

@@ -1,5 +1,6 @@
 package engine3d;
 
+import base.graphics.Renderer;
 import engine3d.matrix.Mat4x4;
 import engine3d.matrix.MatrixMath;
 import engine3d.mesh.Mesh;
@@ -110,6 +111,10 @@ public class PipeLine {
 
         lightDirection = new Vec4df(0.0f, 0.0f, -1.0f);
         lightDirection.normalize();
+    }
+
+    public PipeLine(Renderer r) {
+        this(r.getP(), r.getWidth(), r.getHeight());
     }
 
     /**
@@ -462,6 +467,10 @@ public class PipeLine {
 
     public Mat4x4 getWorldMatrix() {
         return worldMatrix;
+    }
+
+    public Mat4x4 getProjectionMatrix() {
+        return matProjection;
     }
 
     public Perspective getPerspective() {

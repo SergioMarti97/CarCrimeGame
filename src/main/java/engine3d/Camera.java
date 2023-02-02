@@ -219,4 +219,22 @@ public class Camera {
         return lookDirection;
     }
 
+    public Vec4df getIntersectionPoint(Vec4df direction) {
+        Vec4df lookDirection = MatrixMath.vectorAdd(origin, target);
+        Mat4x4 matView = MatrixMath.matrixPointAt(origin, lookDirection, up);
+        Vec4df ori = new Vec4df();
+        Vec4df dir = new Vec4df(direction);
+
+        ori = MatrixMath.matrixMultiplyVector(matView, ori);
+        dir = MatrixMath.matrixMultiplyVector(matView, dir);
+        dir = MatrixMath.vectorMul(dir, 1000.0f);
+        dir = MatrixMath.vectorAdd(ori, dir);
+
+        // Modify this if is required find the intersection point with other plane
+        // This two vectors define a plane: first position, second orientation (normal)
+        Vec4df planeP = new Vec4df();
+        Vec4df planeN = new Vec4df(0.0f, 0.0f, 1.0f);
+
+        return MatrixMath.vectorIntersectPlane(planeP, planeN, ori, dir);
+    }
 }

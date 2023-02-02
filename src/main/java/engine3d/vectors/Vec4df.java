@@ -184,7 +184,7 @@ public class Vec4df {
 
     @Override
     public String toString() {
-        return "X: " + x + " Y: " + y + " Z: " + z + " W: " + w;
+        return String.format("X: %.4f Y: %.4f Z: %.4f W: %.4f", x, y, z, w);
     }
 
 }

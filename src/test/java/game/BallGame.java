@@ -12,6 +12,7 @@ import engine3d.RenderFlags;
 import engine3d.matrix.MatrixMath;
 import engine3d.mesh.Mesh;
 import engine3d.mesh.MeshFactory;
+import engine3d.mesh.Model;
 import engine3d.transforms.Rotation;
 import engine3d.transforms.Scale;
 import engine3d.transforms.Transform;
@@ -48,6 +49,8 @@ public class BallGame implements AbstractGame {
 
     private int numOfCubes;
 
+    private Model model;
+
     @Override
     public void initialize(GameApplication gc) {
         pipeLine = new PipeLine(gc.getRenderer().getP(), gc.getWidth(), gc.getHeight());
@@ -60,7 +63,7 @@ public class BallGame implements AbstractGame {
                 new Vec2di(100, 150)
         };
 
-        ImageTile imageTile = new ImageTile("/city/City_Roads1_mip1.png", 96, 96);
+        ImageTile imageTile = new ImageTile("/assets/City_Roads1_mip1.png", 96, 96);
         texture = imageTile.getTileImage(3, 1);
 
         obj = MeshFactory.getUnitCube();
@@ -76,6 +79,8 @@ public class BallGame implements AbstractGame {
             float y = 1.5f * (rnd.nextFloat() - rnd.nextFloat());
             translations[i] = new Translation(x, y, 0);
         }
+
+        model = MeshFactory.getModel("/assets/buildings/building.obj");
     }
 
     private void updateCameraPanning(GameApplication gc, float dt) {
@@ -162,6 +167,7 @@ public class BallGame implements AbstractGame {
             Transform t = new Transform();
             pipeLine.setTransform(t.combine(trans).combine(scale).combine(rot).combine(translations[i]).getMat());
             pipeLine.renderMesh(MeshFactory.getUnitCube(), texture);
+            pipeLine.renderModel(model);
         }
         pipeLine.getRenderer3D().clearDepthBuffer();
 

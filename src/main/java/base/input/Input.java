@@ -52,7 +52,9 @@ public class Input {
 
         setNodeClickEvents();
         setNodeKeyEvents();
-        node.setOnScroll(event -> scroll += (int) event.getDeltaY() / 40);
+        node.setOnScroll(event -> {
+            scroll += (int) (event.getDeltaY() / 32); // (int) event.getDeltaY() / 40
+        });
     }
 
     private void setNodeKeyEvents() {

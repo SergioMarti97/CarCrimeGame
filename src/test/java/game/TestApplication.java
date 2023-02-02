@@ -2,15 +2,15 @@ package game;
 
 import base.GameApplication;
 
-public class BallApplication extends GameApplication {
+public class TestApplication extends GameApplication {
 
     @Override
     public void init() throws Exception {
         super.init();
-        setAppName("Ball Application");
+        setAppName("Test Application");
         setWidth(985);
         setHeight(645);
-        setGame(new BallGame());
+        setGame(new CityGame());
     }
 
     public static void main(String[] args) {

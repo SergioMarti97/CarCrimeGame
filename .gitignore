@@ -4,4 +4,5 @@
 *.iml
 pom.xml
 *.blend
+*.blend1
 *.xcf

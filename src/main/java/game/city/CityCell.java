@@ -1,6 +1,5 @@
 package game.city;
 
-import base.vectors.points2d.Vec2df;
 import base.vectors.points2d.Vec2di;
 import collisions.Polygon;
 import collisions.PolygonFactory;

@@ -3,3 +3,5 @@
 .idea
 *.iml
 pom.xml
+*.blend
+*.xcf

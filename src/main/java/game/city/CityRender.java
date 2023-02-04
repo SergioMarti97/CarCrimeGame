@@ -32,8 +32,7 @@ public class CityRender {
         pipe.setTransform(trans.getMat());
         Model model = assets.get(cell.getId());
         pipe.renderModel(model);
-    }
-    */
+    }*/
 
     public void renderCell(CityCell cell, Image[] textures) {
         Translation trans = new Translation(cell.getPos().getX(), cell.getPos().getY(), 0.0f);
@@ -42,30 +41,16 @@ public class CityRender {
             trans.update();
             pipe.setTransform(trans.getMat());
             pipe.renderMesh(MeshFactory.getFlat(), textures[cell.getImgIndex()]);
+        } else if (cell.isBuilding()) {
+            trans.getDelta().addToX(+1);
+            trans.getDelta().addToY(+1);
+            trans.update();
+            pipe.setTransform(trans.getMat());
+            pipe.renderModel(building);
         } else {
-            float buildingHeight = 0.2f;
-            if (cell.getHeight() == 0) {
-                trans.update();
-                pipe.setTransform(trans.getMat());
-                pipe.renderMesh(MeshFactory.getFlat(), textures[cell.getImgIndex()]);
-            } else if (cell.getHeight() > 0) {
-                /*int h;
-                for (h = 0; h < cell.getHeight(); h++) {
-                    trans.getDelta().setZ(-(h + 1) * buildingHeight);
-                    trans.update();
-                    pipe.setTransform(trans.getMat());
-                    pipe.renderMesh(MeshFactory.getWallsOut(), textures[7]);
-                }
-                trans.getDelta().setZ(-(h) * buildingHeight);
-                trans.update();
-                pipe.setTransform(trans.getMat());
-                pipe.renderMesh(MeshFactory.getFlat(), textures[3]);*/
-                trans.getDelta().addToX(+1);
-                trans.getDelta().addToY(+1);
-                trans.update();
-                pipe.setTransform(trans.getMat());
-                pipe.renderModel(building);
-            }
+            trans.update();
+            pipe.setTransform(trans.getMat());
+            pipe.renderMesh(MeshFactory.getFlat(), textures[cell.getImgIndex()]);
         }
 
     }

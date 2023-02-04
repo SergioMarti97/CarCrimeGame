@@ -18,6 +18,7 @@ import engine3d.vectors.Vec4df;
 import game.car.Car;
 import game.city.City;
 import game.city.CityCell;
+import game.city.CityIO;
 import game.city.CityRender;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -53,12 +54,51 @@ public class CityGame implements AbstractGame {
 
     private final ArrayList<Polygon> boundingBoxes = new ArrayList<>();
 
+    ////
+
+    private final String path = "C:\\Users\\Sergio\\IdeaProjects\\JAVAFX\\javafx-CarCrimeGame\\src\\main\\resources\\city.json";
+
+    // only "saveCityTask" modifies those variable
+
+    private boolean isSavingCity = false;
+
+    private long saveCityElapsedTime = 0;
+
+    private final Runnable saveCityTask = new Runnable() {
+        @Override
+        public void run() {
+            System.out.println("Saving City...");
+            isSavingCity = true;
+            long t1 = System.nanoTime();
+            CityIO.saveCity(path, city);
+            long t2 = System.nanoTime();
+            saveCityElapsedTime = t2 - t1;
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("City saved!");
+            isSavingCity = false;
+        }
+    };
+
+    ////
+
     @Override
     public void initialize(GameApplication gc) {
-        Image imageCar = new Image("/assets/cars/car_top1.png");
-        carModel = MeshFactory.getModel("/assets/cars/citroen/model_car.obj");
+        Image imageCar = new Image("/assets/vehicles/car_top1.png");
+        carModel = MeshFactory.getModel("/assets/vehicles/citroen/model_car.obj");
         car = new Car(imageCar);
-        city = new City(64, 32);
+        // city = new City(64, 32);
+        city = CityIO.loadCity(path);
+        // At initialize, fill the bounding boxes array with the data from the loaded city
+        for (CityCell cityCell : city.getCells()) {
+            if (cityCell.isBuilding()) {
+                cityCell.setSolid(cityCell.isBuilding());
+                boundingBoxes.add(cityCell.getBoundingBox());
+            }
+        }
 
         cityTextures = getTextures(new ImageTile("/assets/City_Roads1_mip1.png", 96, 96));
 
@@ -171,35 +211,23 @@ public class CityGame implements AbstractGame {
         if (gc.getInput().isKeyDown(KeyCode.T)) {
             if (!selectedCells.isEmpty()) {
                 for (var cell : selectedCells) {
-                    cell.addHeight(1);
+                    cell.setBuilding(!cell.isBuilding());
+                    cell.setSolid(cell.isBuilding());
                     if (cell.isSolid()) {
                         boundingBoxes.add(cell.getBoundingBox());
                     }
                 }
             } else {
                 CityCell cell = city.getCell(mouseWorld.getX(), mouseWorld.getY());
-                cell.addHeight(1);
+                cell.setBuilding(!cell.isBuilding());
+                cell.setSolid(cell.isBuilding());
                 if (cell.isSolid()) {
-                    boundingBoxes.add(cell.getBoundingBox());
-                }
-            }
-        }
-        if (gc.getInput().isKeyDown(KeyCode.E)) {
-            if (!selectedCells.isEmpty()) {
-                for (var cell : selectedCells) {
-                    cell.addHeight(-1);
-                    if (!cell.isSolid()) {
-                        boundingBoxes.remove(cell.getBoundingBox());
-                    }
-                }
-            } else {
-                CityCell cell = city.getCell(mouseWorld.getX(), mouseWorld.getY());
-                cell.addHeight(-1);
-                if (!cell.isSolid()) {
                     boundingBoxes.remove(cell.getBoundingBox());
                 }
             }
         }
+
+        // todo: code of control if the cell is water. Now this feature is not implemented in class CityCell
     }
 
     @Override
@@ -214,6 +242,11 @@ public class CityGame implements AbstractGame {
             p.setOverlap(false);
             p.setOverlap(p.isOverlap() || ConvexPolygonCollisions.shapeOverlapDIAGSStatic(car.getBoundingBox(), p));
             car.setPosToBuildingBox();
+        }
+
+        // Save city
+        if (gc.getInput().isKeyDown(KeyCode.SPACE)) {
+            new Thread(saveCityTask).start();
         }
 
     }
@@ -235,6 +268,12 @@ public class CityGame implements AbstractGame {
         }
 
         pipe.getRenderer3D().clearDepthBuffer();
+
+        if (isSavingCity) {
+            gc.getRenderer().drawText(
+                    String.format("City saved! (in %.6f seg)", saveCityElapsedTime / 1000000000.0f),
+                    10, 10, HexColors.YELLOW);
+        }
 
         /*car.getBoundingBox().render(gc);
         for (Polygon polygon : polygons) {

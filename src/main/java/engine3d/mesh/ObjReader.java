@@ -429,14 +429,15 @@ public class ObjReader {
         if (readObjFile(path, true)) {
             if (readMtlFile(materialFileName)) {
 
-                LinkedHashMap<String, Material> m = materials.entrySet().stream().sorted((o1, o2) -> {
+                /*LinkedHashMap<String, Material> m = materials.entrySet().stream().sorted((o1, o2) -> {
                     int n1 = Integer.parseInt(o1.getKey().replaceAll("\\D+", "").trim());
                     int n2 = Integer.parseInt(o2.getKey().replaceAll("\\D+","").trim());
                     return Integer.compare(n1, n2);
-                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));*/
 
                 for (MeshObject meshObject : o) {
-                    meshObject.setMaterial(m.get(meshObject.getMaterialName()));
+                    //meshObject.setMaterial(m.get(meshObject.getMaterialName()));
+                    meshObject.setMaterial(materials.get(meshObject.getMaterialName()));
                 }
 
                 return true;

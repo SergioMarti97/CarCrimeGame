@@ -23,7 +23,7 @@ import javafx.scene.input.MouseButton;
 
 import java.util.Random;
 
-public class BallGame implements AbstractGame {
+public class BallGame extends AbstractGame {
 
     private int x;
 
@@ -63,7 +63,7 @@ public class BallGame implements AbstractGame {
                 new Vec2di(100, 150)
         };
 
-        ImageTile imageTile = new ImageTile("/assets/City_Roads1_mip1.png", 96, 96);
+        ImageTile imageTile = new ImageTile("/graphics/city/City_Roads1_mip1.png", 96, 96);
         texture = imageTile.getTileImage(3, 1);
 
         obj = MeshFactory.getUnitCube();

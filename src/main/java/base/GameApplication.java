@@ -38,16 +38,15 @@ public class GameApplication extends Application {
 
     // Scene layout
 
-    private WritableImage image;
-
     private Canvas canvas;
 
     @Override
     public void start(Stage stage) {
         // Renderer
         renderer = new Renderer(width, height);
+
         // Build Writable image
-        image = new WritableImage(renderer.getPixelBuffer());
+        WritableImage image = new WritableImage(renderer.getPixelBuffer());
 
         // ----------------------------- //
         // - Set the application scene - //
@@ -90,6 +89,12 @@ public class GameApplication extends Application {
             clock.start();
             stage.show();
         }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        game.stop(this);
     }
 
     // Update and Render methods

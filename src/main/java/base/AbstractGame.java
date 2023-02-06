@@ -1,11 +1,13 @@
 package base;
 
-public interface AbstractGame {
+public abstract class AbstractGame {
 
-    void initialize(GameApplication gc);
+    public abstract void initialize(GameApplication gc);
 
-    void update(GameApplication gc, float elapsedTime);
+    public abstract void update(GameApplication gc, float elapsedTime);
 
-    void render(GameApplication gc);
+    public abstract void render(GameApplication gc);
+
+    public void stop(GameApplication gc) {}
 
 }

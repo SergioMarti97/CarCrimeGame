@@ -123,7 +123,7 @@ public class City {
         this.dimensions = dimensions;
     }
 
-    public void clearCity() {
+    public void clearCells() {
         cells = new CityCell[dimensions.getX() * dimensions.getY()];
     }
 

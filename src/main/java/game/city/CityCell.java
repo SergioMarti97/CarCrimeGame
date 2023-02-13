@@ -24,7 +24,7 @@ public class CityCell {
 
     private boolean isSolid = false;
 
-    private Polygon boundingBox;
+    private final Polygon boundingBox;
 
     ///////////////////////////
 

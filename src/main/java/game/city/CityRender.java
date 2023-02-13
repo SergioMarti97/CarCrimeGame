@@ -19,7 +19,7 @@ public class CityRender {
 
     public CityRender(PipeLine pipe) {
         this.pipe = pipe;
-        building = MeshFactory.getModel("/assets/buildings/building.obj");
+        building = MeshFactory.getModel("/assets/buildings/building.obj"); // /assets/buildings/building.obj
     }
 
     public CityRender(PipeLine pipe, HashMap<Integer, Model> assets) {

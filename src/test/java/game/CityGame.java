@@ -90,7 +90,7 @@ public class CityGame extends AbstractGame {
             System.out.println("Saving City...");
             isSavingCity = true;
             long t1 = System.nanoTime();
-            CityIO.saveCity(path, city);
+            CityIO.saveCity(path + File.separator + cityFileName, city);
             long t2 = System.nanoTime();
             saveCityElapsedTime = t2 - t1;
             try {
@@ -106,7 +106,7 @@ public class CityGame extends AbstractGame {
     @Override
     public void initialize(GameApplication gc) {
         Image imageCar = new Image("/graphics/vehicle/car_top1.png");
-        carModel = MeshFactory.getModel("/assets/vehicles/citroen/model_car.obj"); // "/assets/vehicles/citroen/model_car.obj"
+        carModel = MeshFactory.getModel("/assets/vehicles/citroen/model_car.obj");
 
         car = new Vehicle(imageCar);
         city = CityIO.loadCity(path + File.separator + cityFileName);
@@ -201,25 +201,6 @@ public class CityGame extends AbstractGame {
     private void initializeMenu() {
         menuGraphics = new ImageTile("/graphics/menu/RetroMenu2.png", 16, 24);
         mm = new MenuManager();
-        /*mo = new MenuObject("main").setTable(1, 3);
-        mo.add("City").setTable(1, 8);
-
-        MenuObject menuCity = mo.get("City");
-        menuCity.add("Save city").setId(101);
-        menuCity.add("Clear city").setId(102);
-        menuCity.add("Set building").setId(103);
-        menuCity.add("Unset buildings").setId(104);
-        menuCity.add("Change buildings").setId(105);
-        menuCity.add("Set road").setId(106);
-        menuCity.add("Unset road").setId(107);
-        menuCity.add("Change roads").setId(108);
-
-        mo.add("Car").setId(109);
-        mo.add("Options").setTable(1, 2);
-
-        MenuObject menuOptions = mo.get("Options");
-        menuOptions.add("View menu borders").setId(110);
-        menuOptions.add("Hide menu borders").setId(111);*/
 
         mo = MenuIO.loadMenu(path + File.separator + menuFileName);
 
@@ -294,16 +275,18 @@ public class CityGame extends AbstractGame {
         // Panning
         pipe.getCameraObj().getOrigin().setX(car.getPosition().getX());
         pipe.getCameraObj().getOrigin().setY(car.getPosition().getY());
+
         // Zoom
-        //Vec4df forward = MatrixMath.vectorMul(pipe.getCameraObj().getLookDirection(), - gc.getInput().getScroll() * 0.5f * dt);
-        //pipe.getCameraObj().setOrigin(MatrixMath.vectorAdd(pipe.getCameraObj().getOrigin(), forward));
+        Vec4df forward = MatrixMath.vectorMul(pipe.getCameraObj().getLookDirection(), - gc.getInput().getScroll() * 0.5f * dt);
+        pipe.getCameraObj().setOrigin(MatrixMath.vectorAdd(pipe.getCameraObj().getOrigin(), forward));
+
         if (gc.getInput().isKeyHeld(KeyCode.PLUS)) {
-            Vec4df forward = MatrixMath.vectorMul(pipe.getCameraObj().getLookDirection(), - 1 * 0.5f * dt);
-            pipe.getCameraObj().setOrigin(MatrixMath.vectorAdd(pipe.getCameraObj().getOrigin(), forward));
+            Vec4df f = MatrixMath.vectorMul(pipe.getCameraObj().getLookDirection(), - 1 * 0.5f * dt);
+            pipe.getCameraObj().setOrigin(MatrixMath.vectorAdd(pipe.getCameraObj().getOrigin(), f));
         }
         if (gc.getInput().isKeyHeld(KeyCode.MINUS)) {
-            Vec4df forward = MatrixMath.vectorMul(pipe.getCameraObj().getLookDirection(), 1 * 0.5f * dt);
-            pipe.getCameraObj().setOrigin(MatrixMath.vectorAdd(pipe.getCameraObj().getOrigin(), forward));
+            Vec4df f = MatrixMath.vectorMul(pipe.getCameraObj().getLookDirection(), 1 * 0.5f * dt);
+            pipe.getCameraObj().setOrigin(MatrixMath.vectorAdd(pipe.getCameraObj().getOrigin(), f));
         }
 
         // Update the mat view
@@ -431,7 +414,6 @@ public class CityGame extends AbstractGame {
         updateMenu(gc);
 
         // Check for overlaps
-
         for (var p : boundingBoxes) {
             p.setOverlap(false);
             p.setOverlap(p.isOverlap() || ConvexPolygonCollisions.shapeOverlapDIAGSStatic(car.getBoundingBox(), p));

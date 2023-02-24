@@ -5,9 +5,11 @@ import base.GameApplication;
 import base.graphics.HexColors;
 import base.graphics.image.Image;
 import base.graphics.image.ImageTile;
+import base.vectors.points2d.Vec2df;
 import base.vectors.points2d.Vec2di;
 import collisions.ConvexPolygonCollisions;
 import collisions.Polygon;
+import collisions.PolygonDrawUtils;
 import engine3d.PipeLine;
 import engine3d.RenderFlags;
 import engine3d.matrix.Mat4x4;
@@ -26,6 +28,8 @@ import menu.MenuAction;
 import menu.MenuIO;
 import menu.MenuManager;
 import menu.MenuObject;
+import panAndZoom.PanAndZoomRenderer;
+import panAndZoom.PanAndZoomUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,9 +50,15 @@ public class CityGame extends AbstractGame {
 
     private CityRender cityRender;
 
+    private PanAndZoomRenderer renderer2D;
+
     private Model carModel;
 
     private Image[] cityTextures;
+
+    private boolean drawCarModel = true;
+
+    private boolean isDebug = true;
 
     // User input management
 
@@ -123,6 +133,10 @@ public class CityGame extends AbstractGame {
         pipe = new PipeLine(gc.getRenderer());
         pipe.getRenderer3D().setRenderFlag(RenderFlags.RENDER_FULL_TEXTURED);
         cityRender = new CityRender(pipe);
+
+        renderer2D = new PanAndZoomRenderer(gc.getRenderer());
+        renderer2D.getWorldScale().set(50, 50);
+        renderer2D.getWorldOffset().set(-18, -11);
 
         // World Mouse
         mouseWorld = new Vec2di();
@@ -239,12 +253,12 @@ public class CityGame extends AbstractGame {
                 changeRoads(selectedCells);
             }
         });
-        menuActions.put(110, () -> {
-            mm.setDrawTileBorders(true);
-        });
-        menuActions.put(111, () -> {
-            mm.setDrawTileBorders(false);
-        });
+        menuActions.put(110, () -> mm.setDrawTileBorders(true));
+        menuActions.put(111, () -> mm.setDrawTileBorders(false));
+        menuActions.put(112, () -> drawCarModel = true);
+        menuActions.put(113, () -> drawCarModel = false);
+        menuActions.put(114, () -> isDebug = true);
+        menuActions.put(115, () -> isDebug = false);
     }
 
     private void updateCar(GameApplication gc, float dt) {
@@ -271,6 +285,15 @@ public class CityGame extends AbstractGame {
         car.updateBoundingBox();
     }
 
+    public void checkCollisions() {
+        // Check for overlaps
+        for (var p : boundingBoxes) {
+            p.setOverlap(false);
+            p.setOverlap(p.isOverlap() || ConvexPolygonCollisions.shapeOverlapDIAGSStatic(car.getBoundingBox(), p));
+            car.setPosToBuildingBox();
+        }
+    }
+
     private void updateCamera(GameApplication gc, float dt) {
         // Panning
         pipe.getCameraObj().getOrigin().setX(car.getPosition().getX());
@@ -293,14 +316,7 @@ public class CityGame extends AbstractGame {
         pipe.updateMatView();
     }
 
-    private void updateMousePositionOnGroundPlane(GameApplication gc) {
-        Vec4df mouse3d = pipe.getCameraObj().getIntersectionPoint(new Vec4df(
-                -2.0f * (((float) gc.getInput().getMouseX() / (float) gc.getWidth()) - 0.5f) / pipe.getProjectionMatrix().getM()[0][0],
-                -2.0f * (((float) gc.getInput().getMouseY() / (float) gc.getHeight()) - 0.5f) / pipe.getProjectionMatrix().getM()[1][1],
-                1.0f,
-                0.0f
-        ));
-
+    private void updateMouseInput(GameApplication gc) {
         if (gc.getInput().isButtonHeld(MouseButton.PRIMARY) &&
                 ((mouseWorld.getX() != oldMouseWorld.getX()) ||
                         (mouseWorld.getY() != oldMouseWorld.getY()))
@@ -321,12 +337,44 @@ public class CityGame extends AbstractGame {
         if (gc.getInput().isButtonUp(MouseButton.SECONDARY)) {
             selectedCells.clear();
         }
+    }
+
+    private void updateMousePositionOn3DPlane(GameApplication gc) {
+        Vec4df mouse3d = pipe.getCameraObj().getIntersectionPoint(new Vec4df(
+                -2.0f * (((float) gc.getInput().getMouseX() / (float) gc.getWidth()) - 0.5f) / pipe.getProjectionMatrix().getM()[0][0],
+                -2.0f * (((float) gc.getInput().getMouseY() / (float) gc.getHeight()) - 0.5f) / pipe.getProjectionMatrix().getM()[1][1],
+                1.0f,
+                0.0f
+        ));
+
+        updateMouseInput(gc);
 
         oldMouseWorld.setX(mouseWorld.getX());
         oldMouseWorld.setY(mouseWorld.getY());
 
         mouseWorld.setX((int) mouse3d.getX());
         mouseWorld.setY((int) mouse3d.getY());
+    }
+
+    private void updateMousePositionOn2DPlane(GameApplication gc) {
+        renderer2D.handlePanAndZoom(gc, MouseButton.MIDDLE, 0.001f, true, true);
+
+        Vec2df mouse2d = PanAndZoomUtils.screenToWorld(
+                new Vec2df(
+                        (float) gc.getInput().getMouseX(), // - renderer2D.getWidth(),
+                        (float) gc.getInput().getMouseY() //- renderer2D.getHeight()
+                ),
+                renderer2D.getWorldOffset(),
+                renderer2D.getWorldScale()
+        );
+
+        updateMouseInput(gc);
+
+        oldMouseWorld.setX(mouseWorld.getX());
+        oldMouseWorld.setY(mouseWorld.getY());
+
+        mouseWorld.setX((int)(mouse2d.getX()));
+        mouseWorld.setY((int)(mouse2d.getY()));
     }
 
     private void updateCity(GameApplication gc) {
@@ -408,27 +456,83 @@ public class CityGame extends AbstractGame {
     @Override
     public void update(GameApplication gc, float elapsedTime) {
         updateCar(gc, elapsedTime);
-        updateCamera(gc, elapsedTime);
-        updateMousePositionOnGroundPlane(gc);
+        checkCollisions();
+
+        if (isDebug) {
+            updateMousePositionOn2DPlane(gc);
+        } else {
+            updateCamera(gc, elapsedTime);
+            updateMousePositionOn3DPlane(gc);
+        }
+
         updateCity(gc);
         updateMenu(gc);
-
-        // Check for overlaps
-        for (var p : boundingBoxes) {
-            p.setOverlap(false);
-            p.setOverlap(p.isOverlap() || ConvexPolygonCollisions.shapeOverlapDIAGSStatic(car.getBoundingBox(), p));
-            car.setPosToBuildingBox();
-        }
     }
 
-    @Override
-    public void render(GameApplication gc) {
-        gc.getRenderer().clear(HexColors.ROYAL_BLUE);
+    private void render2DWorld(GameApplication gc) {
+        // Colors
+        int colorDefault = HexColors.WHITE;
+        int colorSolid = HexColors.YELLOW;
+        int colorRoad = HexColors.BLACK;
+        int colorCollision = HexColors.RED;
+        int colorSelect = HexColors.GREEN;
 
+        Vec2df cellSize = new Vec2df(1, 1);
+
+        // Draw default cells
+        for (var cell : city.getCells()) {
+            Vec2df pos = new Vec2df(cell.getPos().getX(), cell.getPos().getY());
+            //pos.multiply(-1);
+
+            if (cell.isSolid()) {
+                renderer2D.drawFillRect(pos, cellSize, colorSolid);
+            } else if (cell.isRoad()) {
+                renderer2D.drawFillRect(pos, cellSize, colorRoad);
+            } else {
+                renderer2D.drawRect(pos, cellSize, colorDefault);
+            }
+
+        }
+
+        for (var cell : selectedCells) {
+            Vec2df pos = new Vec2df(cell.getPos().getX(), cell.getPos().getY());
+            //pos.multiply(-1);
+            renderer2D.drawRect(pos, cellSize, colorSelect);
+        }
+
+        renderer2D.drawText("World mouse: " + mouseWorld, 10, 10, HexColors.GREEN);
+        renderer2D.drawText("Num selected cells: " + selectedCells.size(), 10, 40, HexColors.GREEN);
+        renderer2D.drawText("World offset: " + renderer2D.getWorldOffset(), 10, 70, HexColors.GREEN);
+        renderer2D.drawText("World scale: " + renderer2D.getWorldScale(), 10, 100, HexColors.GREEN);
+        renderer2D.drawText(String.format("Screen mouse: %.3fx %.3fy", gc.getInput().getMouseX(), gc.getInput().getMouseY()), 10, 130, HexColors.GREEN);
+
+        // Draw bounding boxes
+        /*PolygonDrawUtils.drawPolygon(
+                gc.getRenderer(),
+                car.getBoundingBox(),
+                renderer2D.getWorldOffset(),
+                renderer2D.getWorldScale(),
+                colorDefault, colorCollision);
+        for (Polygon polygon : boundingBoxes) {
+            PolygonDrawUtils.drawPolygon(
+                    gc.getRenderer(),
+                    polygon,
+                    renderer2D.getWorldOffset(),
+                    renderer2D.getWorldScale(),
+                    colorDefault, colorCollision);
+        }*/
+
+    }
+
+    private void render3DWorld(GameApplication gc) {
         pipe.getRenderer3D().setRenderFlag(RenderFlags.RENDER_FULL_TEXTURED);
         cityRender.renderCity(city, cityTextures);
-        car.render(carModel, pipe);
-        //car.render(pipe);
+
+        if (drawCarModel) {
+            car.render(carModel, pipe);
+        } else {
+            car.render(pipe);
+        }
 
         pipe.getRenderer3D().setRenderFlag(RenderFlags.RENDER_WIRE);
         for (var cell : selectedCells) {
@@ -438,6 +542,17 @@ public class CityGame extends AbstractGame {
         }
 
         pipe.getRenderer3D().clearDepthBuffer();
+    }
+
+    @Override
+    public void render(GameApplication gc) {
+        gc.getRenderer().clear(HexColors.ROYAL_BLUE);
+
+        if (!isDebug) {
+            render3DWorld(gc);
+        } else {
+            render2DWorld(gc);
+        }
 
         mm.draw(gc.getRenderer(), menuGraphics, new Vec2di(50, 50));
 
@@ -446,11 +561,6 @@ public class CityGame extends AbstractGame {
                     String.format("City saved! (in %.6f seg)", saveCityElapsedTime / 1000000000.0f),
                     10, 40, HexColors.YELLOW);
         }
-
-        /*car.getBoundingBox().render(gc);
-        for (Polygon polygon : polygons) {
-            polygon.render(gc);
-        }*/
     }
 
     @Override

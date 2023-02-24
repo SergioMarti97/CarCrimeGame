@@ -52,6 +52,11 @@ public class MenuObject {
         this.name = name;
     }
 
+    public MenuObject(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public void build() {
         /*
          * Recursively build all children, so they can determine their size, use
